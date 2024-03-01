@@ -1,0 +1,37 @@
+services:
+  arcas_hla:
+    profiles: 
+      - arcas
+    image: arcas_hla
+    build: 
+      context: ./arcas/
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home
+  optitype:
+    profiles: 
+      - optitype
+    image: optitype
+    build: 
+      context: ./optitype/
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home
+  t1k:
+    profiles: 
+      - t1k
+    image: t1k
+    build: 
+      context: ./t1k/
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home
+  aggregate:
+    profiles: 
+      - aggregate
+    image: aggregate
+    build: 
+      context: ./aggregate/
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home
