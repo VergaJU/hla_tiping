@@ -85,7 +85,8 @@ mkdir $output_dir
 
 for bampath in $(find data/ -type f -not -name "*.bai"); do
     bamfile=$(basename ${bampath%.*})
-    sample_out=${output_dir}"/"${bamfile}
+    bamdir=$(basename $(dirname $bampath))
+    sample_out=${output_dir}"/"${bamdir}
     # create repo for file:
     echo "Processing file $bamfile..."
     echo "Extracting reads for Chr6"
