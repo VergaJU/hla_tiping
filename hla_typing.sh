@@ -47,7 +47,13 @@ EXTRACT (){
     bampath=$1
     output=$2
     threads=$3
-    sudo docker compose --profile arcas run	--rm arcas_hla arcasHLA extract --single -o /home/$output /home/$bampath -t $threads
+    mkdir -p ${output}/tmp
+    sudo docker compose --profile extract run	--rm extract python /home/scripts/extract.py --single -o /home/$output/tmp/ /home/$bampath -t $threads
+    chr6=$(find ${output}/tmp/ -name "*extracted.fq.gz")
+    echo $chr6
+    docker compose --profile optitype run --rm optitype razers3 -i 95 -m 1 -dr 0 -tc $threads -o /home/$output/tmp/fished_1.bam /usr/local/bin/data/hla_reference_rna.fasta /home/${chr6}
+    docker compose --profile optitype run --rm optitype samtools bam2fq /home/$output/tmp/fished_1.bam > $output/hla_reads.fq
+    rm -rf ${output}/tmp
 }
 
 
@@ -83,7 +89,7 @@ AGGREGATE(){
 mkdir $output_dir
 
 
-for bampath in $(find data/ -type f -not -name "*.bai"); do
+for bampath in $(find data/ -type f -name "*.bam"); do
     bamfile=$(basename ${bampath%.*})
     bamdir=$(basename $(dirname $bampath))
     sample_out=${output_dir}"/"${bamdir}
@@ -92,10 +98,10 @@ for bampath in $(find data/ -type f -not -name "*.bai"); do
     echo "Extracting reads for Chr6"
     EXTRACT $bampath $sample_out $threads
     # get fastq location
-    fastq=$(find $sample_out -name "*.fq*")
+    fastq=${sample_out}/hla_reads.fq
     # arcasHLA
-    echo "running arcasHLA..."
-    ARCAS $fastq $sample_out $threads
+    # echo "running arcasHLA..."
+    # ARCAS $fastq $sample_out $threads
     echo "running optitype..."
     OPTITYPE $fastq $sample_out $bamfile
     echo "running T1K..."

@@ -1,10 +1,20 @@
 services:
-  arcas_hla:
-    profiles: 
-      - arcas
-    image: arcas_hla
-    build: 
-      context: ./arcas/
+#  arcas_hla:
+#    profiles: 
+#      - arcas
+#    image: arcas_hla
+#    build: 
+#      context: ./arcas/
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./:/home
+#
+  extract:
+    profiles:
+      - extract
+    image: samtools_py
+    build:
+      context: ./samtools_py/
       dockerfile: Dockerfile
     volumes:
       - ./:/home
