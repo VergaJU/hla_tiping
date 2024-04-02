@@ -7,8 +7,8 @@ import sys
 file_path = sys.argv[1]
 sample = sys.argv[2]
 
-arcas = pd.read_json(file_path+"/arcasHLA/"+sample+".genotype.json")
-arcas["tool"] = "arcasHLA"
+# arcas = pd.read_json(file_path+"/arcasHLA/"+sample+".genotype.json")
+# arcas["tool"] = "arcasHLA"
 
 
 optitype= pd.read_csv(file_path+"/optitype/"+sample+"_result.tsv", sep="\t", index_col=[0])
@@ -22,7 +22,7 @@ optitype = optitype.pivot(index='index', columns='columns', values='values').res
 optitype["tool"] = "optitype"
 
 
-t1k = pd.read_csv(file_path+"/t1k/T1K_"+sample+"_allele.tsv", sep=" ", header=None)
+t1k = pd.read_csv(file_path+"/t1k/T1K_hla_reads_allele.tsv", sep=" ", header=None)
 t1k = t1k.drop([1], axis=1)
 
 # Remove "HLA-" from the strings
@@ -38,7 +38,8 @@ t1k =  t1k.pivot_table(index='Group', columns='Type', values='Allele', aggfunc=l
 
 t1k["tool"] = "T1K"
 
-df = pd.concat([arcas, optitype,t1k], ignore_index=True)
+# df = pd.concat([arcas, optitype,t1k], ignore_index=True)
+df = pd.concat([optitype,t1k],ignore_index=True)
 df.index = df["tool"]
 df = df.drop("tool", axis=1)
 df.to_csv(file_path+"/aggregate_genotypes.tsv", sep ='\t')

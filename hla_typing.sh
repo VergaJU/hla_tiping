@@ -94,7 +94,7 @@ for bampath in $(find data/ -type f -name "*.bam"); do
     bamdir=$(basename $(dirname $bampath))
     sample_out=${output_dir}"/"${bamdir}
     # create repo for file:
-    echo "Processing file $bamfile..."
+    echo $(date) " - Processing file $bamdir..."
     echo "Extracting reads for Chr6"
     EXTRACT $bampath $sample_out $threads
     # get fastq location
@@ -102,10 +102,10 @@ for bampath in $(find data/ -type f -name "*.bam"); do
     # arcasHLA
     # echo "running arcasHLA..."
     # ARCAS $fastq $sample_out $threads
-    echo "running optitype..."
+    echo $(date) " - running optitype $bamdir..."
     OPTITYPE $fastq $sample_out $bamfile
-    echo "running T1K..."
+    echo $(date) " - running T1K $bamdir..."
     T1K $fastq $sample_out $threads
-    echo "aggregate results..."
+    echo $(date) " - aggregate results $bamdir..."
     AGGREGATE $sample_out $bamfile
 done
