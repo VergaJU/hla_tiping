@@ -132,7 +132,6 @@ for path in $file_list; do
         else
             fastq=$path
         fi
-        echo $fastq!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         bamdir=$(basename $(dirname $path))
         sample_out=${output_dir}"/"${bamdir}
         # create repo for file:
