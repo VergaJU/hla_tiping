@@ -10,6 +10,7 @@ Help()
    echo
    echo "Syntax: scriptTemplate [-i|t|h|]"
    echo "options:"
+   echo "i     string, input format (fastq or bam). Default: bam"
    echo "t     number of threads. Default: 8"
    echo "o     output directory. Default: hla_typing_out"
    echo "s     single or paired end. Default: single"
@@ -22,13 +23,15 @@ Help()
 
 output_dir="hla_typing_out"
 threads=8
-
+input='bam'
 # Get the options
 while getopts ":hf:i:t:o:" option; do
    case $option in
       h) # display Help
          Help
          exit;;
+      i) # Threads
+         input=$OPTARG;;
       t) # Threads
          threads=$OPTARG;;
       o) # Output
@@ -85,27 +88,60 @@ AGGREGATE(){
     sudo docker compose --profile aggregate run --rm aggregate aggregate.py /home/$sample_out $bamfile
 }
 
-# create output directory
-mkdir $output_dir
 
 
-for bampath in $(find data/ -type f -name "*.bam"); do
-    bamfile=$(basename ${bampath%.*})
-    bamdir=$(basename $(dirname $bampath))
-    sample_out=${output_dir}"/"${bamdir}
-    # create repo for file:
-    echo $(date) " - Processing file $bamdir..."
-    echo "Extracting reads for Chr6"
-    EXTRACT $bampath $sample_out $threads
-    # get fastq location
-    fastq=${sample_out}/hla_reads.fq
-    # arcasHLA
-    # echo "running arcasHLA..."
-    # ARCAS $fastq $sample_out $threads
+# create output directory if it doesn't exist
+if [ ! -d $output_dir ]; then
+    mkdir $output_dir
+fi
+
+
+# if $input equal to bam: create array bam files. 
+# If $input equal to fastq: create array fastq files (files files ending with .fastq, .fq, .fastq.gz, .fq.gz)
+if [ $input == "bam" ]; then
+    file_list=$(find data/ -type f -name "*.bam")
+elif [ $input == "fastq" ]; then
+    file_list=$(find data/ -type f -name "*.fastq" -o -name "*.fq" -o -name "*.fastq.gz" -o -name "*.fq.gz")
+fi
+
+## loop over files, if $input is bam:
+# 1. save variables $bamfile and $bamdir
+# 2. extract reads for chr6
+# 3. save the fastq location
+## if $input is fastq:
+# 1. check if file is compressed and eventually uncompress it
+# 2. save variables $fastq and $bamdir (not compressed)
+## Then run OPTYPTYPE and T1K
+## Finally, aggregate results
+for path in $file_list; do
+    if [ $input == "bam" ]; then
+        bamfile=$(basename ${path%.*})
+        bamdir=$(basename $(dirname $path))
+        sample_out=${output_dir}"/"${bamdir}
+        # create repo for file:
+        echo $(date) " - Processing file $bamdir..."
+        echo "Extracting reads for Chr6"
+        EXTRACT $path $sample_out $threads
+        # get fastq location
+        fastq=${sample_out}/hla_reads.fq
+    elif [ $input == "fastq" ]; then
+    # if fastq is compressed gunzip it and update fastq variable
+        if [[ $path == *.gz ]]; then
+            gunzip $path
+            fastq=${path%.*}
+        else
+            fastq=$path
+        fi
+        echo $fastq!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        bamdir=$(basename $(dirname $path))
+        sample_out=${output_dir}"/"${bamdir}
+        # create repo for file:
+        echo $(date) " - Processing file $bamdir..."
+    fi
     echo $(date) " - running optitype $bamdir..."
-    OPTITYPE $fastq $sample_out $bamfile
+    OPTITYPE $fastq $sample_out $bamdir
     echo $(date) " - running T1K $bamdir..."
     T1K $fastq $sample_out $threads
     echo $(date) " - aggregate results $bamdir..."
-    AGGREGATE $sample_out $bamfile
+    AGGREGATE $sample_out $bamdir
 done
