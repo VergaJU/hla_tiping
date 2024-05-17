@@ -137,10 +137,10 @@ for path in $file_list; do
         # create repo for file:
         echo $(date) " - Processing file $bamdir..."
     fi
-    echo $(date) " - running optitype $bamdir..."
-    OPTITYPE $fastq $sample_out $bamdir
+    echo $(date) " -Not running optitype $bamdir..."
+    #OPTITYPE $fastq $sample_out $bamdir
     echo $(date) " - running T1K $bamdir..."
     T1K $fastq $sample_out $threads
-    echo $(date) " - aggregate results $bamdir..."
-    AGGREGATE $sample_out $bamdir
+    #echo $(date) " - aggregate results $bamdir..."
+    #AGGREGATE $sample_out $bamdir
 done
